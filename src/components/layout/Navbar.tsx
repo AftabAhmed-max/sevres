@@ -3,17 +3,25 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { X, Menu } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const pathname                = usePathname();
-  const { user, initialized }   = useAuth();
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+  const pathname                  = usePathname();
+  const router                    = useRouter();
+  const { user, initialized, signOut } = useAuth();
   const startProgress = () => window.dispatchEvent(new Event("navigation-start"));
+
+  const handleSignOut = async () => {
+    setMenuOpen(false);
+    await signOut();
+    router.refresh();
+    router.push("/");
+  };
 
   // ── Scroll detection ──
   useEffect(() => {
@@ -104,52 +112,77 @@ export default function Navbar() {
 
         {/* Right side */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          {/* My Account avatar — desktop, logged in only */}
+          {/* My Account + Sign Out — desktop, logged in only */}
           {user && (
-            <Link
-              href="/account"
-              className="desktop-cta"
-              style={{
-                display:         "inline-flex",
-                alignItems:      "center",
-                gap:             "0.5rem",
-                fontFamily:      "'DM Sans', sans-serif",
-                fontSize:        "0.8rem",
-                fontWeight:      500,
-                color:           "#2C1810",
-                padding:         "0.375rem 0.875rem 0.375rem 0.375rem",
-                borderRadius:    "9999px",
-                border:          "1.5px solid rgba(44,24,16,0.12)",
-                transition:      "all 0.25s ease",
-                whiteSpace:      "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(196,149,106,0.5)";
-                e.currentTarget.style.color = "#C4956A";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(44,24,16,0.12)";
-                e.currentTarget.style.color = "#2C1810";
-              }}
-            >
-              <span style={{
-                width:           "26px",
-                height:          "26px",
-                borderRadius:    "9999px",
-                background:      "linear-gradient(135deg, #C4956A 0%, #B8965A 100%)",
-                display:         "flex",
-                alignItems:      "center",
-                justifyContent:  "center",
-                color:           "#FAF7F2",
-                fontSize:        "0.625rem",
-                fontWeight:      600,
-                letterSpacing:   "0.05em",
-                flexShrink:      0,
-              }}>
-                {user.email?.slice(0, 2).toUpperCase()}
-              </span>
-              My Account
-            </Link>
+            <>
+              <Link
+                href="/account"
+                className="desktop-cta"
+                style={{
+                  display:         "inline-flex",
+                  alignItems:      "center",
+                  gap:             "0.5rem",
+                  fontFamily:      "'DM Sans', sans-serif",
+                  fontSize:        "0.8rem",
+                  fontWeight:      500,
+                  color:           "#2C1810",
+                  padding:         "0.375rem 0.875rem 0.375rem 0.375rem",
+                  borderRadius:    "9999px",
+                  border:          "1.5px solid rgba(44,24,16,0.12)",
+                  transition:      "all 0.25s ease",
+                  whiteSpace:      "nowrap",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(196,149,106,0.5)";
+                  e.currentTarget.style.color = "#C4956A";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(44,24,16,0.12)";
+                  e.currentTarget.style.color = "#2C1810";
+                }}
+              >
+                <span style={{
+                  width:           "26px",
+                  height:          "26px",
+                  borderRadius:    "9999px",
+                  background:      "linear-gradient(135deg, #C4956A 0%, #B8965A 100%)",
+                  display:         "flex",
+                  alignItems:      "center",
+                  justifyContent:  "center",
+                  color:           "#FAF7F2",
+                  fontSize:        "0.625rem",
+                  fontWeight:      600,
+                  letterSpacing:   "0.05em",
+                  flexShrink:      0,
+                }}>
+                  {user.email?.slice(0, 2).toUpperCase()}
+                </span>
+                My Account
+              </Link>
+
+              <button
+                onClick={handleSignOut}
+                className="desktop-cta"
+                style={{
+                  fontFamily:    "'DM Sans', sans-serif",
+                  fontSize:      "0.8rem",
+                  fontWeight:    400,
+                  letterSpacing: "0.06em",
+                  color:         "#8B7355",
+                  padding:       "0.375rem 0.75rem",
+                  borderRadius:  "9999px",
+                  background:    "none",
+                  border:        "none",
+                  cursor:        "pointer",
+                  transition:    "all 0.25s ease",
+                  whiteSpace:    "nowrap",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#2C1810"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#8B7355"; }}
+              >
+                Sign Out
+              </button>
+            </>
           )}
 
           {/* Sign In — desktop, logged out only, after auth is confirmed */}
@@ -306,16 +339,37 @@ export default function Navbar() {
             );
           })}
 
-          {/* Auth link in overlay */}
-          <div className="overlay-nav-item" style={{ marginTop: "1.5rem" }}>
+          {/* Auth links in overlay */}
+          <div
+            className="overlay-nav-item"
+            style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}
+          >
             {user ? (
-              <Link
-                href="/account"
-                className="btn-primary"
-                style={{ fontSize: "0.8125rem" }}
-              >
-                My Account
-              </Link>
+              <>
+                <Link
+                  href="/account"
+                  className="btn-primary"
+                  style={{ fontSize: "0.8125rem" }}
+                >
+                  My Account
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  style={{
+                    fontFamily:    "'DM Sans', sans-serif",
+                    fontSize:      "0.8125rem",
+                    fontWeight:    400,
+                    letterSpacing: "0.08em",
+                    color:         "#8B7355",
+                    background:    "none",
+                    border:        "none",
+                    cursor:        "pointer",
+                    padding:       "0.25rem 0",
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link
                 href="/auth/login"

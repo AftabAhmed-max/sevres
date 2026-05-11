@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AuthGuard from "@/components/auth/AuthGuard";
@@ -24,12 +25,19 @@ export default function AccountPage() {
 }
 
 function AccountContent() {
-  const { user, profile }         = useAuth();
-  const [bookings, setBookings]   = useState<BookingWithDetails[]>([]);
-  const [loading,  setLoading]    = useState(true);
-  const [tab,      setTab]        = useState<TabType>("upcoming");
+  const { user, profile, signOut } = useAuth();
+  const router                     = useRouter();
+  const [bookings, setBookings]    = useState<BookingWithDetails[]>([]);
+  const [loading,  setLoading]     = useState(true);
+  const [tab,      setTab]         = useState<TabType>("upcoming");
   const [cancelling, setCancelling] = useState<string | null>(null);
-  const [toast,    setToast]      = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toast,    setToast]       = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.refresh();
+    router.push("/");
+  };
 
   const fetchBookings = useCallback(async () => {
     if (!user) return;
@@ -140,9 +148,38 @@ function AccountContent() {
                 </div>
               </div>
 
-              <a href="/book" className="btn-primary btn-sm">
-                Book Again
-              </a>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <button
+                  onClick={handleSignOut}
+                  style={{
+                    fontFamily:    "'DM Sans', sans-serif",
+                    fontSize:      "0.8rem",
+                    fontWeight:    400,
+                    letterSpacing: "0.06em",
+                    color:         "#8B7355",
+                    background:    "none",
+                    border:        "1.5px solid rgba(139,115,85,0.25)",
+                    borderRadius:  "9999px",
+                    padding:       "0.5rem 1.125rem",
+                    cursor:        "pointer",
+                    transition:    "all 0.25s ease",
+                    whiteSpace:    "nowrap",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#C4956A";
+                    e.currentTarget.style.color       = "#C4956A";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(139,115,85,0.25)";
+                    e.currentTarget.style.color       = "#8B7355";
+                  }}
+                >
+                  Sign Out
+                </button>
+                <a href="/book" className="btn-primary btn-sm">
+                  Book Again
+                </a>
+              </div>
             </div>
           </div>
 
