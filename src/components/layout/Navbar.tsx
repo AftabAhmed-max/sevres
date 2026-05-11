@@ -152,6 +152,29 @@ export default function Navbar() {
             </Link>
           )}
 
+          {/* Sign In — desktop, logged out only */}
+          {!user && (
+            <Link
+              href="/auth/login"
+              className="desktop-cta"
+              style={{
+                fontFamily:    "'DM Sans', sans-serif",
+                fontSize:      "0.8rem",
+                fontWeight:    400,
+                letterSpacing: "0.06em",
+                color:         "#8B7355",
+                padding:       "0.375rem 0.75rem",
+                borderRadius:  "9999px",
+                transition:    "all 0.25s ease",
+                whiteSpace:    "nowrap",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#2C1810"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#8B7355"; }}
+            >
+              Sign In
+            </Link>
+          )}
+
           {/* Book Now CTA — desktop */}
           <Link
             href="/book"
