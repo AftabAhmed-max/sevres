@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SALON } from "@/lib/constants";
 import NavigationProgressWrapper from "@/components/ui/NavigationProgressWrapper";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 
 const cormorant = Cormorant_Garamond({
@@ -91,7 +92,9 @@ export default function RootLayout({
       </head>
       <body className={`bg-ivory text-espresso antialiased ${cormorant.variable} ${dmSans.variable}`}>
         <NavigationProgressWrapper />
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
