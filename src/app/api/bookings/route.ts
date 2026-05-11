@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { service_id, stylist_id, date, time_slot, notes } = body;
+    const { service_id, stylist_id, date, time_slot, notes, guest_name } = body;
 
     // Validate required fields
     if (!service_id || !stylist_id || !date || !time_slot) {
@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
         date,
         time_slot,
         status:     "pending",
-        notes:      notes ?? null,
+        notes:      notes      ?? null,
+        guest_name: guest_name ?? null,
       } as never)
       .select()
       .single();

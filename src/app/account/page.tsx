@@ -9,7 +9,6 @@ import InitialsAvatar from "@/components/ui/InitialsAvatar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import Toast from "@/components/ui/Toast";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/lib/supabase/client";
 import { formatDateLabel, formatTimeLabel, formatPrice } from "@/lib/time-slots";
 import { CalendarDays, Clock, User, Scissors, XCircle } from "lucide-react";
 import type { BookingWithDetails } from "@/lib/supabase/types";
@@ -32,29 +31,20 @@ function AccountContent() {
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [toast,    setToast]      = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const supabase = createClient();
-
   const fetchBookings = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("bookings")
-      .select(`
-        *,
-        service:services(id, name, category, duration, price),
-        stylist:stylists(id, name, specialties)
-      `)
-      .eq("user_id", user.id)
-      .order("date",      { ascending: false })
-      .order("time_slot", { ascending: false });
-
-    if (!error && data) {
-      setBookings(data as unknown as BookingWithDetails[]);
+    try {
+      const res  = await fetch("/api/user/bookings");
+      const json = await res.json();
+      if (json.success) {
+        setBookings(json.data as BookingWithDetails[]);
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [user]);                                    // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     fetchBookings();

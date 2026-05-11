@@ -184,6 +184,10 @@ export function useSubmitBooking(): UseSubmitBookingReturn {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
+  // Public reads (services/stylists) still use the browser client — they are
+  // unrestricted by RLS. The booking INSERT goes through the API route so the
+  // server-side cookie-based client handles auth, avoiding browser-client
+  // token-refresh hangs in production.
   const supabase = createClient();
 
   const {
@@ -227,33 +231,30 @@ export function useSubmitBooking(): UseSubmitBookingReturn {
           }
         }
 
-        // ── Step 2: Insert booking ──
+        // ── Step 2: Insert booking via API route ──
+        // Using the server-side route avoids browser-client token-refresh
+        // hangs when the Supabase session needs to be validated in production.
 
-        const insertPayload = {
-          user_id:    data.userId,
-          service_id: data.service_id,
-          stylist_id: data.stylist_id,
-          date:       data.date,
-          time_slot:  data.time_slot,
-          status:     "pending" as const,
-          notes:      data.notes ?? null,
-          guest_name: data.userName !== data.userEmail ? data.userName : null,
-        };
+        const insertRes  = await fetch("/api/bookings", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({
+            service_id: data.service_id,
+            stylist_id: data.stylist_id,
+            date:       data.date,
+            time_slot:  data.time_slot,
+            notes:      data.notes ?? undefined,
+            guest_name: data.userName !== data.userEmail ? data.userName : undefined,
+          }),
+        });
 
-        const { data: rawBooking, error: insertError } = await supabase
-          .from("bookings")
-          .insert(insertPayload as never)
-          .select()
-          .single();
+        const insertJson = await insertRes.json();
 
-        if (insertError) throw new Error(insertError.message);
-
-        // Cast to Booking so all properties are accessible
-        const booking = rawBooking as unknown as Booking;
-
-        if (!booking) {
-          throw new Error("Booking could not be created. Please try again.");
+        if (!insertJson.success) {
+          throw new Error(insertJson.error ?? "Booking could not be created. Please try again.");
         }
+
+        const booking = insertJson.data as Booking;
 
         // ── Step 3: Fetch service and stylist names ──
 
