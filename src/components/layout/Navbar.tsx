@@ -12,7 +12,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname                = usePathname();
-  const { user }                = useAuth();
+  const { user, initialized }   = useAuth();
   const startProgress = () => window.dispatchEvent(new Event("navigation-start"));
 
   // ── Scroll detection ──
@@ -152,8 +152,8 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Sign In — desktop, logged out only */}
-          {!user && (
+          {/* Sign In — desktop, logged out only, after auth is confirmed */}
+          {initialized && !user && (
             <Link
               href="/auth/login"
               className="desktop-cta"

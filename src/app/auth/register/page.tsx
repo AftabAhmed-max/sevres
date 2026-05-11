@@ -60,7 +60,7 @@ export default function RegisterPage() {
     }
 
     setToast("Account created. Welcome to Sèvres & Co.");
-    setTimeout(() => router.push("/"), 1500);
+    setTimeout(() => { router.refresh(); router.push("/"); }, 1500);
   };
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {

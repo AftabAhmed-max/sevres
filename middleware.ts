@@ -14,7 +14,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // handled separately via /api/admin/login
 // ─────────────────────────────────────────────
 
-const PROTECTED_ROUTES = ["/bookings"];
+const PROTECTED_ROUTES = ["/account", "/bookings"];
 
 // ─────────────────────────────────────────────
 // MIDDLEWARE

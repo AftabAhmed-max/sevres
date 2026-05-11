@@ -43,6 +43,7 @@ export default function LoginPage() {
     }
 
     setToast("Welcome back.");
+    router.refresh();
     router.push(redirectTo);
   };
 
